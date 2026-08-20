@@ -1,4 +1,4 @@
-import pedido from './components/Pedido'
+import Pedido from './components/Pedido'
 
 const App = () => {
   return (

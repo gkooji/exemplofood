@@ -1,76 +1,114 @@
-import {use, useState} from 'react'
+import { useState } from 'react'
+import '../css/estilo.css'
 
-// array de objetos contendo o estado inicial do cardapio
-
-const cardapio=[
-    {id:1,nome:"Combo-Mcchiken-medio",preco:25.00,disponivel:true,quantidade:0},
-    { id: 1, nome: "Combo-Legal", preco: 35.00, disponivel: true, quantidade: 0 },
-    { id: 1, nome: "Combo-Maneiro", preco: 45.00, disponivel: true, quantidade: 0 },
-    { id: 1, nome: "Combo-Sinistro", preco: 65.00, disponivel: true, quantidade: 0 },
-
+//Array de objetos contendo o estado inicial do cardápio
+const cardapio = [
+    { id: 1, nome: "Combo mcchicken medio", preco: 25.00, disponivel: true, quantidade: 0 },
+    { id: 2, nome: "Combo legal", preco: 35.00, disponivel: true, quantidade: 0 },
+    { id: 3, nome: "Combo maneiro", preco: 45.00, disponivel: true, quantidade: 0 },
+    { id: 4, nome: "Combo sinistro", preco: 55.00, disponivel: true, quantidade: 0 },
 ];
 
 const Pedido = () => {
 
-    //hook useState-Manipula o estado da variavel
-    //estados para gerenciar a lista de itens
-    const[items,setItems]=useState(cardapio);
-    const[status,setStatus]=useState("");
-    const[enviar,setEnviar]=useState(false);
+    // HOOK-useState-Manipula o estado da variável
+    //Estados para gerenciar a lista de items
+    const [items, setItems] = useState(cardapio);
+    const [status, setStatus] = useState("");
+    const [enviar, setEnviar] = useState(false);
 
-    //valor fixo adicionado ao total quando tiver itens no carrinho
-    const taxaEntrega=5.00;
-
+    //Valor fixo adicionado ao total quando tiver items no carrinho
+    const taxaEntrega = 5.00;
 
     //função que altera a quantidade de um pedido
-    const alterarQuantidade =(id,valor)=>{
-        setItems(prev=>
-            prev.map(item=>
-                item.id===id ? {...item,quantidade: Math.max(0,item.quantidade + valor)}: item
-
-                
+    const alterarQuantidade = (id, valor) => {
+        //usa a função updater para garantir o valor mais recente do estado
+        setItems(prev =>
+            //MAP: percorre a lista para criar um NOVO array sem modificar
+            //o original(IMUTABILIDADE)
+            prev.map(item =>
+                //TERNÁRIO:verifica se o item da iteração atual é o que deve ser 
+                // alterado
+                //SPRED (...item) :copia as propriedades do item e 
+                // atualiza apenas a quantidade mantendo o resto
+                //Math.max : objeto que garante que a quantidade nunca seja menor que 0
+                //Item: retorna o item intacto caso o id não corresponda
+                item.id === id ? { ...item, quantidade: Math.max(0, item.quantidade + valor) } : item
             )
         )
     }
-    // filter seleciona apenas os produtos disponiveis e do carrinho
-    const produtosDisponiveis = items.filter(item=>item.disponivel)
-    const carrinho = items.filter(item=>item.quantidade >0)
-    // reduce calcula a soma dos itens (preço * quantitdade) e adiciona a taxa de entrega
-    const subtotal = carrinho.reduce((ac,item)=> ac + item.preco * item.quantidade,0),
-    const total = subotal >0 ? subtotal + taxaEntrega :0;
+    //FILTER- Seleciona apenas os produtos disponiveis e do carrinho
+    const produtosDisponiveis = items.filter(item => item.disponivel);
+    const carrinho = items.filter(item => item.quantidade > 0);
 
-    // simulação do ciclo de vida da entrega usando temporizadores assincronos
-    const confirmarPedido=()=>{
-        setEnviar(true)
-        setStatus("Restaurante preparando seu pedido...")
-        setTimeout(()=>{
-            setStatus("Seu pedido saiu para entrega!")
+    //REDUCE-Calcula a soma dos items (preco * quantidade)e adiciona a taxa de entrega
+    const subtotal = carrinho.reduce((ac, item) => ac + item.preco * item.quantidade, 0);
+    const total = subtotal > 0 ? subtotal + taxaEntrega : 0;
+
+    //SIMULAÇÃO DO CICLO DE VIDA DA ENTREGA USANDO TEMPORIZADORES ASSINCRONOS
+    const confirmarPedido = () => {
+        setEnviar(true);
+        setStatus("Restaurante preparando seu pedido...");
+        setTimeout(() => {
+            setStatus("Seu Pedido saiu para entrega!")
             setEnviar(false)
-        },5000);
-        setTimeout(()=>{
+        }, 5000);
+        setTimeout(() => {
             setStatus("Seu pedido foi entregue com sucesso")
             setEnviar(false)
-        },10000)
-
-
-
+        }, 10000)
     }
 
+    return (
+        <>
+            <div className="container">
+                <h2>Cardápio do Restaurante</h2>
+                {produtosDisponiveis.map(produto => (
+                    <div key={produto.id} className="item-cardapio">
+                        <span>{produto.nome}(R$ {produto.preco.toFixed(2)})</span>
+                        <div className="item-controles">
+                            <button onClick={() => alterarQuantidade(produto.id, -1)} className="btn-qtn">-</button>
+                            <span>{produto.quantidade}</span>
+                            <button onClick={() => alterarQuantidade(produto.id, +1)} className="btn-qtn">+</button>
+                        </div>
+                    </div>
+                ))}
 
+                <hr className="linha" />
+                <h3>Resumo da Entrega</h3>
+                {carrinho.length === 0 ? (
+                    <p>Seu Carrinho está Vazio</p>
+                ) : (
+                <>
+                    
+                    <ul className="resum0-lista">
+                        {carrinho.map(item=>(
+                            <li key={item.id}>
+                                {item.quantidade} x {item.nome} R$ {(item.preco * item.quantidade).toFixed(2)}
 
+                            </li>
+                        ))}
 
+                    </ul>
+                    <p>Subtotal:R${subtotal.toFixed(2)}</p>
+                    <p>Taxa de Entrega: R${taxaEntrega.toFixed(2)}</p>
+                    <strong className="total">Total a pagar: R${total.toFixed(2)}</strong>
+                    <button className="btn-confirmar" onClick={confirmarPedido} disabled={enviar}>
+                        {enviar ? "Enviando....":"Confirmar Pedido"}
 
+                    </button>
+                </>
+                )}
+                {status && (
+                    <div className="alerta-status">
+                        <strong>Alerta:</strong>{status}
+                    </div>
+                )}
 
+            </div>
 
-
-
-
-
-  return (
-    <>
-      
-    </>
-  )
+        </>
+    )
 }
 
 export default Pedido
