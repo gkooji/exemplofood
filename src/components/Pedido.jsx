@@ -31,6 +31,28 @@ const Pedido = () => {
                 
             )
         )
+    }
+    // filter seleciona apenas os produtos disponiveis e do carrinho
+    const produtosDisponiveis = items.filter(item=>item.disponivel)
+    const carrinho = items.filter(item=>item.quantidade >0)
+    // reduce calcula a soma dos itens (preço * quantitdade) e adiciona a taxa de entrega
+    const subtotal = carrinho.reduce((ac,item)=> ac + item.preco * item.quantidade,0),
+    const total = subotal >0 ? subtotal + taxaEntrega :0;
+
+    // simulação do ciclo de vida da entrega usando temporizadores assincronos
+    const confirmarPedido=()=>{
+        setEnviar(true)
+        setStatus("Restaurante preparando seu pedido...")
+        setTimeout(()=>{
+            setStatus("Seu pedido saiu para entrega!")
+            setEnviar(false)
+        },5000);
+        setTimeout(()=>{
+            setStatus("Seu pedido foi entregue com sucesso")
+            setEnviar(false)
+        },10000)
+
+
 
     }
 
